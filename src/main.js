@@ -1,6 +1,5 @@
-// src/main.js ✅ EXTRA SLOW SNAP + LONGER PRE-POP ANIMATION (ring pulse + heart burst)
-// ✅ FIXED for GitHub Pages photos by using absolute repo path: /for-mitchy/photos/*.jpeg
-// Replace your current src/main.js with this
+// src/main.js ✅ Works on localhost + GitHub Pages (BASE_URL photos)
+// EXTRA SLOW SNAP + LONGER PRE-POP ANIMATION (ring pulse + heart burst)
 
 import "./style.css";
 import * as THREE from "three";
@@ -51,8 +50,8 @@ function openModal(item) {
 function closeModal() {
   modal.setAttribute("aria-hidden", "true");
 }
-modalBackdrop.addEventListener("click", closeModal);
-closeBtn.addEventListener("click", closeModal);
+modalBackdrop?.addEventListener("click", closeModal);
+closeBtn?.addEventListener("click", closeModal);
 window.addEventListener("keydown", (e) => e.key === "Escape" && closeModal());
 
 /* ---------- Three.js ---------- */
@@ -161,47 +160,49 @@ for (let i = 0; i < 22; i++) {
 }
 
 /* ---------- Photos (Coverflow) ---------- */
-/* ✅ GitHub Pages fix: hardcode repo base path */
+// ✅ This makes paths work everywhere (dev + GitHub Pages)
+const base = import.meta.env.BASE_URL;
+
 const itemsData = [
   {
-    src: "/for-mitchy/photos/1.jpeg",
+    src: `${base}photos/1.jpeg`,
     title: "Babeeeee😍",
     message:
-      "You sent me this when you were preparing for your event, event though i was busy working with my sister.Every time I look at you, my heart says: that’s my person.",
+      "You sent me this when you were preparing for your event, event though i was busy working with my sister. Every time I look at you, my heart says: that’s my person.",
   },
   {
-    src: "/for-mitchy/photos/2.jpeg",
+    src: `${base}photos/2.jpeg`,
     title: "That glow 🖤",
     message: "You’re the kind of beautiful that makes everything feel softer.",
   },
   {
-    src: "/for-mitchy/photos/3.jpeg",
-    title:
-      "Our little movie propably one of my favourite memories cause i was just alone with you 🎬",
+    src: `${base}photos/3.jpeg`,
+    title: "Our little movie 🎬",
     message:
-      "despite it being in a dark tunnel my donnyas came out and i saw light",
+      "Despite it being in a dark tunnel my donnyas came out and I saw light.",
   },
   {
-    src: "/for-mitchy/photos/4.jpeg",
-    title: "this smile makes me want to smile every time i see you, Us, always 😁",
-    message: "Your smile takes me places. esepecially when you hold my hand",
-  },
-  {
-    src: "/for-mitchy/photos/5.jpeg",
-    title: "Also another goofy memory that i think about alot 😜",
-    message: "I want the silly, the serious, memories all with you.",
-  },
-  {
-    src: "/for-mitchy/photos/6.jpeg",
-    title:
-      "This kiss honest to God i dont know how you took it while kissing, but i really love it!!! ",
-    message: "the way you held me while kissing me was the best feeling ever",
-  },
-  {
-    src: "/for-mitchy/photos/7.jpeg",
-    title: "last but not least 💞",
+    src: `${base}photos/4.jpeg`,
+    title: "Us, always 😁",
     message:
-      "This babeee honestly is my favourite image of us and wow it brings all the good memories back and truly i want to make more even if it means throwing up again 😭 i will do it",
+      "Your smile takes me places… especially when you hold my hand.",
+  },
+  {
+    src: `${base}photos/5.jpeg`,
+    title: "Goofy memory 😜",
+    message: "I want the silly, the serious, memories… all with you.",
+  },
+  {
+    src: `${base}photos/6.jpeg`,
+    title: "This kiss i honestly dont know how you took it but i love it !!!! 💞",
+    message:
+      "The way you held me while kissing me was the best feeling ever.",
+  },
+  {
+    src: `${base}photos/7.jpeg`,
+    title: "My favourite photo 🥹",
+    message:
+      "This is my favourite image of us. Not Only Because its when i realised how much im into you as you were into me, but It brings all the good memories back… and I want to make more (even if it means throwing up again 😭).",
   },
 ];
 
@@ -255,7 +256,7 @@ itemsData.forEach((item, i) => {
       const g = makeFrame(tex);
       g.userData = {
         ...item,
-        fullSrc: item.src, // modal uses this
+        fullSrc: item.src,
         index: i,
         targetPos: new THREE.Vector3(),
         targetRotY: 0,
@@ -265,7 +266,9 @@ itemsData.forEach((item, i) => {
       frames.push(g);
     },
     undefined,
-    (err) => console.error("Texture load failed:", item.src, err)
+    (err) => {
+      console.error("Failed to load texture:", item.src, err);
+    }
   );
 });
 
@@ -353,10 +356,9 @@ function schedulePopupWithFX(frame) {
 
   const isPhone = window.innerWidth < 520;
 
-  // ✅ slower overall
-  const minDelay = isPhone ? 520 : 420; // wait longer before FX
-  const maxDelay = isPhone ? 1800 : 1500; // fallback
-  const fxDuration = isPhone ? 900 : 750; // longer pre-popup animation
+  const minDelay = isPhone ? 520 : 420;
+  const maxDelay = isPhone ? 1800 : 1500;
+  const fxDuration = isPhone ? 900 : 750;
 
   const start = performance.now();
 
@@ -480,7 +482,6 @@ function pickAndOpen() {
   const root = findRoot(hits[0].object);
   if (!root) return;
 
-  // switching selection cancels old FX
   stopFX();
   pendingForIndex = root.userData.index;
 
@@ -515,7 +516,7 @@ const clock = new THREE.Clock();
 function animate() {
   const t = clock.getElapsedTime();
 
-  // ✅ EXTRA slow snap to center
+  // EXTRA slow snap to center
   currentIndex = THREE.MathUtils.lerp(currentIndex, targetIndex, 0.045);
 
   layoutCoverflow();
@@ -557,7 +558,7 @@ function animate() {
   if (fxActive) {
     fxT += 1 / 60;
 
-    const p = Math.min(1, fxT / 0.80); // ✅ slower FX speed
+    const p = Math.min(1, fxT / 0.80); // slower FX speed
     const ease = 1 - Math.pow(1 - p, 3);
 
     ringMat.opacity = (p < 0.55 ? p / 0.55 : 1) * (1 - p) * 1.25;
